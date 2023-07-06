@@ -10,7 +10,7 @@ import (
 	"github.com/vision-cli/vision-plugin-infra-v1/plugin"
 )
 
-func main() {
+func maian() {
 	input := ""
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {

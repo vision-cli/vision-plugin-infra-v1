@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2022-09-01/managementGroupDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "functions": [],
+  "variables": {},
+  "resources": [{
+      "name": "vision-storage-acc-test",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "tags": {
+          "displayName": "vision-storage-acc-test"
+      },
+      "location": "UK South",
+      "kind": "Storage",
+      "sku": {
+          "name": "Standard_LRS",
+          "tier": "Standard"
+      }
+  }],
+  "outputs": {}
+}

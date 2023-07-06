@@ -86,10 +86,10 @@ func setFlagConfig(cmd *cobra.Command, flag string, setter func(string), getter 
 }
 
 func providerChecks(cmd *cobra.Command, args []string, executor execute.Executor) error {
-	silent, err := cmd.Flags().GetBool(config.FlagSilent)
-	if err != nil {
-		return err
-	}
+	// silent, err := cmd.Flags().GetBool(config.FlagSilent)
+	// if err != nil {
+	// 	return err
+	// }
 
 	provider := args[0]
 
@@ -103,7 +103,7 @@ func providerChecks(cmd *cobra.Command, args []string, executor execute.Executor
 
 	switch provider {
 	case ProviderAzure:
-		return AzureChecks(silent, executor)
+		return EngageAzure()
 	case ProviderAws:
 	case ProviderGcp:
 	}
@@ -122,7 +122,7 @@ func createFolderStructure() error {
 		AppName        string
 	}
 	p := Placeholders{
-		ProjectName:    tmpl.Kebab(config.ProjectName()),
+		ProjectName:    config.ProjectName(),
 		ResourceGroup:  config.AzureResourceGroup(),
 		Location:       config.AzureLocation(),
 		StorageAccount: config.AzureStorageAccount(),
