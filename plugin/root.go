@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/atoscerebro/jarvis/config"
-	"github.com/atoscerebro/jarvis/flag"
+	"github.com/vision-cli/vision/config"
+	"github.com/vision-cli/vision/flag"
 )
 
 const (

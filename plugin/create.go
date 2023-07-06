@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/atoscerebro/jarvis/config"
-	"github.com/atoscerebro/jarvis/execute"
-	"github.com/atoscerebro/jarvis/tmpl"
+	"github.com/vision-cli/vision/config"
+	"github.com/vision-cli/common/execute"
+	"github.com/vision-cli/common/tmpl"
 )
 
 const (
@@ -22,18 +22,18 @@ const (
 var templateFilesAz embed.FS
 
 var createCmd = &cobra.Command{
-	Use:   "create [aws|azure|gcp]",
-	Short: "Create the infra assets",
-	Long: `Create the infra folder with terraform assets for the cloud provider selected.
-You need to have terraform installed and the cloud provider CLI installed and configured. For example on a mac for Azure
+	Use:    "create [aws|azure|gcp]",
+	Short:  "Create the infra assets",
+	Long: 	`Create the infra folder with terraform assets for the cloud provider selected.
+					You need to have terraform installed and the cloud provider CLI installed and configured. For example on a mac for Azure
 
-brew update && brew install terraform && brew install azure-cli
+					brew update && brew install terraform && brew install azure-cli
 
-Create will also
-- create a resource group if it doesnt exist
-- create a storage account for the terraform state
-- run terraform init and terraform apply using the service principle provided.
-- A Github secret will be created`,
+					Create will also
+					- create a resource group if it doesnt exist
+					- create a storage account for the terraform state
+					- run terraform init and terraform apply using the service principle provided.
+					- A Github secret will be created`,
 	ValidArgs: []string{ProviderAzure, ProviderAws, ProviderGcp},
 	Args:      cobra.ExactValidArgs(1),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
