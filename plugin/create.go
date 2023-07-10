@@ -1,3 +1,5 @@
+//go:embed all:_templates
+
 package plugin
 
 import (
@@ -6,9 +8,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/vision-cli/vision/config"
+	// "github.com/vision-cli/vision/config"
 	"github.com/vision-cli/common/execute"
 	"github.com/vision-cli/common/tmpl"
+	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
 )
 
 const (
@@ -18,7 +21,6 @@ const (
 	goTemplateDir = "_templates"
 )
 
-//go:embed all:_templates
 var templateFilesAz embed.FS
 
 var createCmd = &cobra.Command{
@@ -52,21 +54,21 @@ func bindFlags(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 && args[0] == ProviderAzure {
 		if err := setFlagConfig(cmd,
 			FlagResourceGroup,
-			config.SetAzureResourceGroup,
-			config.AzureResourceGroup,
-			config.DefaultAzureResourceGroupName); err != nil {
+			placeholders.SetAzureResourceGroup,
+			placeholders.GetAzureResourceGroup,
+			placeholders.GetDefaultAzureResourceGroupName); err != nil {
 			return err
 		}
 
 		if err := setFlagConfig(cmd,
 			FlagLocation,
-			config.SetAzureLocation,
-			config.AzureLocation,
-			config.DefaultAzureLocation); err != nil {
+			placeholders.SetAzureLocation,
+			placeholders.GetAzureLocation,
+			placeholders.DefaultAzureLocation); err != nil {
 			return err
 		}
 
-		return config.SaveConfig()
+		return placeholders.SaveConfig()
 	}
 	return nil
 }
@@ -122,15 +124,15 @@ func createFolderStructure() error {
 		AppName        string
 	}
 	p := Placeholders{
-		ProjectName:    config.ProjectName(),
-		ResourceGroup:  config.AzureResourceGroup(),
-		Location:       config.AzureLocation(),
-		StorageAccount: config.AzureStorageAccount(),
-		Keyvault:       config.AzureKeyvault(),
-		Acr:            config.AzureAcr(),
-		AppName:        config.DefaultAzureApp(),
+		ProjectName:    placeholders.GetProjectName(),
+		ResourceGroup:  placeholders.GetAzureResourceGroup(),
+		Location:       placeholders.GetAzureLocation(),
+		StorageAccount: placeholders.GetAzureStorageAccount(),
+		Keyvault:       placeholders.GetAzureKeyvault(),
+		Acr:            placeholders.GetAzureAcr(),
+		AppName:        placeholders.GetDefaultAzureApp(),
 	}
-	if err := tmpl.GenerateFS(templateFilesAz, goTemplateDir, config.InfraDirectory(), p, false); err != nil {
+	if err := tmpl.GenerateFS(templateFilesAz, goTemplateDir, p, false, FILL-IN-HERE); err != nil {
 		return fmt.Errorf("generating the project structure from the template: %s", err)
 	}
 	return nil

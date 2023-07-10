@@ -1,0 +1,30 @@
+{
+	"Command":"",
+	"Args":["create", "infra", "azure"],
+	"Flags":[],
+	"Placeholders": {
+		"ProjectRoot":"",
+		"ProjectName":"",
+		"ProjectDirectory":"",
+		"ProjectFqn":"",
+		"Registry":"",
+		"Remote":"",
+		"Branch":"",
+		"Version":"",
+		"ServicesFqn":"",
+		"ServicesDirectory":"",
+		"GatewayServiceName":"",
+		"GatewayFqn":"",
+		"GraphqlServiceName":"",
+		"GraphqlFqn":"",
+		"LibsFqn":"",
+		"LibsDirectory":"",
+		"ServiceNamespace":"",
+		"ServiceVersionedNamespace":"",
+		"ServiceName":"",
+		"ServiceFqn":"",
+		"ServiceDirectory":"",
+		"InfraDirectory":"",
+		"ProtoPackage":""
+		}
+}	
