@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	// "github.com/vision-cli/vision/config"
 	"github.com/vision-cli/common/execute"
 	"github.com/vision-cli/common/tmpl"
 	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
@@ -22,6 +21,8 @@ const (
 )
 
 var templateFilesAz embed.FS
+
+var templ_writer = tmpl.NewOsTmpWriter()
 
 var createCmd = &cobra.Command{
 	Use:    "create [aws|azure|gcp]",
@@ -132,7 +133,7 @@ func createFolderStructure() error {
 		Acr:            placeholders.GetAzureAcr(),
 		AppName:        placeholders.GetDefaultAzureApp(),
 	}
-	if err := tmpl.GenerateFS(templateFilesAz, goTemplateDir, p, false, FILL-IN-HERE); err != nil {
+	if err := tmpl.GenerateFS(templateFilesAz, goTemplateDir, placeholders.InfraDirectory(), p, false, templ_writer); err != nil {
 		return fmt.Errorf("generating the project structure from the template: %s", err)
 	}
 	return nil
