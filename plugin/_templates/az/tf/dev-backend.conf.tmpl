@@ -1,0 +1,5 @@
+# Storage account & backend string for tfstate
+resource_group_name  = "{{.ResourceGroup}}"
+storage_account_name = "{{.StorageAccount}}"
+container_name       = "tfstate"
+key                  = "terraform.dev.tfstate"

@@ -19,7 +19,7 @@ const (
 
 func init() {
 	RootCmd.AddCommand(createCmd)
-	createCmd.Flags().AddFlagSet(flag.Config())
+	createCmd.Flags().AddFlagSet(flag.ConfigFlagset())
 	createCmd.Flags().StringP(FlagResourceGroup, "p", "", "Azure resource group")
 	createCmd.Flags().StringP(FlagLocation, "l", "", "Azure resource group location")
 	createCmd.Flags().StringP(FlagStorageAccount, "s", "", "Azure storage account")

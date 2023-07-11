@@ -1,4 +1,3 @@
-//go:embed all:_templates
 
 package plugin
 
@@ -20,6 +19,7 @@ const (
 	goTemplateDir = "_templates"
 )
 
+//go:embed all:_templates
 var templateFilesAz embed.FS
 
 var templ_writer = tmpl.NewOsTmpWriter()

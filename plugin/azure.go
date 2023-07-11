@@ -29,7 +29,7 @@ import (
 
 var (
 	resourceGroupName     string = config.DefaultAzureResourceGroupName()
-	resourceGroupLcoation string = config.DefaultAzureLocation()
+	resourceGroupLocation string = config.DefaultAzureLocation()
 	deploymentName        string = "vision-cli-deployment" // what is this in vision?
 	templateFile          string = "template.json"
 	ctx                          = context.Background()
@@ -72,7 +72,7 @@ func createResourceManager(subscriptionId string) error {
 	}
 
 	resp, err := client.CreateOrUpdate(context.Background(), resourceGroupName, armresources.ResourceGroup{
-		Location: to.Ptr(resourceGroupLcoation),
+		Location: to.Ptr(resourceGroupLocation),
 	}, nil)
 	if err != nil {
 		log.Printf("failed to obtain response: %v", err)

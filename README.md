@@ -7,11 +7,18 @@ Vision plugins require golang (https://go.dev) to be installed
 Install the plugin with
 
 ```
-go install github.com/vision-cli/github.com/vision-cli/vision-plugin-infra-v1
+go install github.com/vision-cli/vision-plugin-infra-v1
 ```
 
 You will now see the infra plugin commands on the vision cli
 
 ```
 vision --help
+```
+
+Env Variables:
+```
+  AZURE_SUBSCRIPTION_ID
+  AZURE_TENANT_ID
+  AZURE_CLIENT_ID
 ```
