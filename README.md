@@ -19,6 +19,4 @@ vision --help
 Env Variables:
 ```
   AZURE_SUBSCRIPTION_ID
-  AZURE_TENANT_ID
-  AZURE_CLIENT_ID
 ```

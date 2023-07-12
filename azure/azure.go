@@ -1,4 +1,4 @@
-package plugin
+package azure
 
 import (
 	"context"
@@ -34,12 +34,8 @@ var (
 )
 
 var accCreateParams armstorage.AccountCreateParameters = armstorage.AccountCreateParameters{
-	ExtendedLocation: &armstorage.ExtendedLocation{
-		Name: to.Ptr("losangeles001"),
-		Type: to.Ptr(armstorage.ExtendedLocationTypesEdgeZone),
-	},
 	Kind:     to.Ptr(armstorage.KindStorage),
-	Location: to.Ptr("eastus"),
+	Location: to.Ptr("uksouth"),
 	Properties: &armstorage.AccountPropertiesCreateParameters{
 		AllowBlobPublicAccess:        to.Ptr(false),
 		AllowSharedKeyAccess:         to.Ptr(true),
