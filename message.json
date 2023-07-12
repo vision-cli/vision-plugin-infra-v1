@@ -1,6 +1,6 @@
 {
 	"Command":"run",
-	"Args":["create","myproject"],
+	"Args":["create","azure"],
 	"Flags":[],
 	"Placeholders": {
 		"ProjectRoot":"",

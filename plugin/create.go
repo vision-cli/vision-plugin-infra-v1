@@ -65,7 +65,7 @@ func bindFlags(cmd *cobra.Command, args []string) error {
 			FlagLocation,
 			placeholders.SetAzureLocation,
 			placeholders.GetAzureLocation,
-			placeholders.DefaultAzureLocation); err != nil {
+			placeholders.GetDefaultAzureLocation); err != nil {
 			return err
 		}
 

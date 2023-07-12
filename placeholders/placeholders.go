@@ -59,7 +59,7 @@ func GetAzureResourceGroup() string {
 }
 
 func GetDefaultAzureResourceGroupName() string {
-	return "rg"
+	return "vision-infra-plugin-rg"
 }
 
 func SetAzureLocation(s string) {
@@ -70,7 +70,7 @@ func GetAzureLocation() string {
 	return viperAzureLocationKey
 }
 
-func DefaultAzureLocation() string {
+func GetDefaultAzureLocation() string {
 	return "uksouth"
 }
 

@@ -2,9 +2,6 @@ package plugin
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -12,8 +9,9 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
-	"github.com/vision-cli/vision/config"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
+	// "github.com/vision-cli/vision/config"
 )
 
 // Create the infra prequisites for Azure. We create these using az commands so that
@@ -28,89 +26,103 @@ import (
 // - container registry - will be projct name + "-cr" + random string
 
 var (
-	resourceGroupName     string = config.DefaultAzureResourceGroupName()
-	resourceGroupLocation string = config.DefaultAzureLocation()
-	deploymentName        string = "vision-cli-deployment" // what is this in vision?
-	templateFile          string = "template.json"
+	resourceGroupName     string = placeholders.GetDefaultAzureResourceGroupName()
+	// resourceGroupLocation string = placeholders.GetDefaultAzureLocation()
+	accountName						string = "infra-plugin-stg-acc"
+	// templateFile          string = "template.json"
 	ctx                          = context.Background()
 )
 
-func readJSON(path string) (map[string]interface{}, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		fmt.Println("failed to read file: %v", err)
-		return nil, err
-	}
-	contents := make(map[string]interface{})
-	_ = json.Unmarshal(data, &contents)
-	return contents, nil
-}
+var accCreateParams armstorage.AccountCreateParameters = armstorage.AccountCreateParameters{
+	ExtendedLocation: &armstorage.ExtendedLocation{
+		Name: to.Ptr("losangeles001"),
+		Type: to.Ptr(armstorage.ExtendedLocationTypesEdgeZone),
+	},
+	Kind:     to.Ptr(armstorage.KindStorage),
+	Location: to.Ptr("eastus"),
+	Properties: &armstorage.AccountPropertiesCreateParameters{
+		AllowBlobPublicAccess:        to.Ptr(false),
+		AllowSharedKeyAccess:         to.Ptr(true),
+		DefaultToOAuthAuthentication: to.Ptr(false),
+		Encryption: &armstorage.Encryption{
+			KeySource:                       to.Ptr(armstorage.KeySourceMicrosoftStorage),
+			RequireInfrastructureEncryption: to.Ptr(false),
+			Services: &armstorage.EncryptionServices{
+				Blob: &armstorage.EncryptionService{
+					Enabled: to.Ptr(true),
+					KeyType: to.Ptr(armstorage.KeyTypeAccount),
+				},
+				File: &armstorage.EncryptionService{
+					Enabled: to.Ptr(true),
+					KeyType: to.Ptr(armstorage.KeyTypeAccount),
+				},
+			},
+		},
+		IsHnsEnabled:  to.Ptr(true),
+		IsSftpEnabled: to.Ptr(true),
+		KeyPolicy: &armstorage.KeyPolicy{
+			KeyExpirationPeriodInDays: to.Ptr[int32](20),
+		},
+		MinimumTLSVersion: to.Ptr(armstorage.MinimumTLSVersionTLS12),
+		RoutingPreference: &armstorage.RoutingPreference{
+			PublishInternetEndpoints:  to.Ptr(true),
+			PublishMicrosoftEndpoints: to.Ptr(true),
+			RoutingChoice:             to.Ptr(armstorage.RoutingChoiceMicrosoftRouting),
+		},
+		SasPolicy: &armstorage.SasPolicy{
+			ExpirationAction:    to.Ptr(armstorage.ExpirationActionLog),
+			SasExpirationPeriod: to.Ptr("1.15:59:59"),
+		},
+	},
+	SKU: &armstorage.SKU{
+		Name: to.Ptr(armstorage.SKUNameStandardGRS),
+	},
+	Tags: map[string]*string{
+		"key1": to.Ptr("value1"),
+		"key2": to.Ptr("value2"),
+	},
+} 
 
 func EngageAzure() error {
 	subscriptionId := os.Getenv("AZURE_SUBSCRIPTION_ID")
 
-	err := createResourceManager(subscriptionId)
+	err := createStorageAccount(subscriptionId)
 	if err != nil {
-		log.Printf("failed to create resource group: %v", err)
+		log.Printf("failed to create storage account: %v", err)
 		return err
 	}
 
 	return nil
 }
 
-func createResourceManager(subscriptionId string) error {
+func createStorageAccount(subscriptionId string) error {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		log.Printf("failed to obtain credential: %v", err)
 		return err
 	}
 
-	client, err := armresources.NewResourceGroupsClient(subscriptionId, cred, nil)
-	if err != nil {
-		log.Printf("failed to create client: %v", err)
-		return err
-	}
-
-	resp, err := client.CreateOrUpdate(context.Background(), resourceGroupName, armresources.ResourceGroup{
-		Location: to.Ptr(resourceGroupLocation),
-	}, nil)
-	if err != nil {
-		log.Printf("failed to obtain response: %v", err)
-		return err
-	}
-
-	log.Printf("resource group ID: %s\n", *&resp.ResourceGroup.ID)
-
-	template, err := readJSON(templateFile)
+	clientFactory, err := armstorage.NewClientFactory(subscriptionId, cred, nil)
 	if err != nil {
 		return err
 	}
 
-	deploymentsClient, err := armresources.NewDeploymentsClient(subscriptionId, cred, nil)
+	client := clientFactory.NewAccountsClient()
+
+	poller, err := client.BeginCreate(ctx, resourceGroupName, accountName, accCreateParams, nil)
 	if err != nil {
-		log.Printf("failed to create deployment client: %v", err)
 		return err
 	}
 
-	deploy, err := deploymentsClient.BeginCreateOrUpdate(
-		ctx,
-		resourceGroupName,
-		deploymentName,
-		armresources.Deployment{
-			Properties: &armresources.DeploymentProperties{
-				Template: template,
-				Mode:     to.Ptr(armresources.DeploymentModeIncremental),
-			},
-			Location: nil,
-			Tags:     nil,
-		},
-		nil,
-	)
+	// res not used currently, so is a blank identifier 
+	_, err = poller.PollUntilDone(ctx, nil)
 	if err != nil {
-		log.Printf("failed to deploy template: %v", err)
 		return err
 	}
-
-	fmt.Println(deploy)
+	
 	return nil
 }
+
+
+
+
+
