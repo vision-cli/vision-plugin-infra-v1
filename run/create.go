@@ -8,8 +8,8 @@ import (
 
 	"github.com/vision-cli/common/execute"
 	"github.com/vision-cli/common/tmpl"
-	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
 	"github.com/vision-cli/vision-plugin-infra-v1/azure"
+	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
 )
 
 //go:embed all:_templates
@@ -28,9 +28,9 @@ var templateFilesAz embed.FS
 var templ_writer = tmpl.NewOsTmpWriter()
 
 var createCmd = &cobra.Command{
-	Use:    "create [aws|azure|gcp]",
-	Short:  "Create the infra assets",
-	Long: 	`Create the infra folder with terraform assets for the cloud provider selected.
+	Use:   "create [aws|azure|gcp]",
+	Short: "Create the infra assets",
+	Long: `Create the infra folder with terraform assets for the cloud provider selected.
 					You need to have terraform installed and the cloud provider CLI installed and configured. For example on a mac for Azure
 
 					brew update && brew install terraform && brew install azure-cli
@@ -55,10 +55,13 @@ var createCmd = &cobra.Command{
 }
 
 func Create(p *placeholders.Placeholders, executor execute.Executor, t tmpl.TmplWriter) error {
-	var err error
 
-	if err = tmpl.GenerateFS(templateFiles, goTemplateDir, p.Name, p, false, t); err != nil {
+	if err := tmpl.GenerateFS(templateFiles, goTemplateDir, p.Name, p, false, t); err != nil {
 		return fmt.Errorf("generating structure from the template: %w", err)
+	}
+
+	if err := azure.EngageAzure(); err != nil {
+		return fmt.Errorf("engaging Azure: %v", err)
 	}
 
 	return nil

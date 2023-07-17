@@ -2,7 +2,7 @@ package azure
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 
 	// "github.com/atoscerebro/jarvis/utils" //???
@@ -26,11 +26,9 @@ import (
 // - container registry - will be projct name + "-cr" + random string
 
 var (
-	resourceGroupName     string = placeholders.GetDefaultAzureResourceGroupName()
-	// resourceGroupLocation string = placeholders.GetDefaultAzureLocation()
-	accountName						string = "infra-plugin-stg-acc"
-	// templateFile          string = "template.json"
-	ctx                          = context.Background()
+	resourceGroupName string = placeholders.GetDefaultAzureResourceGroupName()
+	accountName       string = "infrapluginstgacc"
+	ctx                      = context.Background()
 )
 
 var accCreateParams armstorage.AccountCreateParameters = armstorage.AccountCreateParameters{
@@ -54,17 +52,10 @@ var accCreateParams armstorage.AccountCreateParameters = armstorage.AccountCreat
 				},
 			},
 		},
-		IsHnsEnabled:  to.Ptr(true),
-		IsSftpEnabled: to.Ptr(true),
 		KeyPolicy: &armstorage.KeyPolicy{
 			KeyExpirationPeriodInDays: to.Ptr[int32](20),
 		},
 		MinimumTLSVersion: to.Ptr(armstorage.MinimumTLSVersionTLS12),
-		RoutingPreference: &armstorage.RoutingPreference{
-			PublishInternetEndpoints:  to.Ptr(true),
-			PublishMicrosoftEndpoints: to.Ptr(true),
-			RoutingChoice:             to.Ptr(armstorage.RoutingChoiceMicrosoftRouting),
-		},
 		SasPolicy: &armstorage.SasPolicy{
 			ExpirationAction:    to.Ptr(armstorage.ExpirationActionLog),
 			SasExpirationPeriod: to.Ptr("1.15:59:59"),
@@ -77,15 +68,14 @@ var accCreateParams armstorage.AccountCreateParameters = armstorage.AccountCreat
 		"key1": to.Ptr("value1"),
 		"key2": to.Ptr("value2"),
 	},
-} 
+}
 
 func EngageAzure() error {
 	subscriptionId := os.Getenv("AZURE_SUBSCRIPTION_ID")
 
 	err := createStorageAccount(subscriptionId)
 	if err != nil {
-		log.Printf("failed to create storage account: %v", err)
-		return err
+		return fmt.Errorf("failed to create storage account: %v", err)
 	}
 
 	return nil
@@ -94,31 +84,26 @@ func EngageAzure() error {
 func createStorageAccount(subscriptionId string) error {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating new default Azure credential: %v", err)
 	}
 
 	clientFactory, err := armstorage.NewClientFactory(subscriptionId, cred, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating client factory: %v", err)
 	}
 
 	client := clientFactory.NewAccountsClient()
 
 	poller, err := client.BeginCreate(ctx, resourceGroupName, accountName, accCreateParams, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating poller: %v", err)
 	}
 
-	// res not used currently, so is a blank identifier 
+	// res not used currently, so is a blank identifier
 	_, err = poller.PollUntilDone(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("polling until done: %v", err)
 	}
-	
+
 	return nil
 }
-
-
-
-
-
