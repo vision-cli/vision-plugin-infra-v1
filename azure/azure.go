@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	// "github.com/atoscerebro/jarvis/utils" //???
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
-	// "github.com/vision-cli/vision/config"
 )
 
 // Create the infra prequisites for Azure. We create these using az commands so that

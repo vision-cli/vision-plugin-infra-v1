@@ -25,6 +25,10 @@
 		"ServiceFqn":"",
 		"ServiceDirectory":"",
 		"InfraDirectory":"",
-		"ProtoPackage":""
+		"ProtoPackage":"",
+    "Infra": {
+      "ResourceGroupName": "vision-infra-plugin-rg",
+      "StorageAccountName": "infrapluginstgacc"
+    }
 		}
 }
