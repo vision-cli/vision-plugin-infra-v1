@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	"github.com/vision-cli/common/execute"
+	// "github.com/vision-cli/common/tmpl"
 	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
 )
 
@@ -67,13 +70,26 @@ var accCreateParams armstorage.AccountCreateParameters = armstorage.AccountCreat
 	},
 }
 
-func EngageAzure() error {
+func EngageAzure(executor execute.Executor) error {
 	subscriptionId := os.Getenv("AZURE_SUBSCRIPTION_ID")
 
+	fmt.Println("creating storage account (azure)")
 	err := createStorageAccount(subscriptionId)
 	if err != nil {
 		return fmt.Errorf("failed to create storage account: %v", err)
 	}
+
+	fmt.Println("executing make init (terraform)")
+	c := exec.Command("make", "init")
+
+	err = executor.Errors(c, "./azure/_templates/az/tf/", "inititalise Terraform")
+	if err != nil {
+		return fmt.Errorf("executing Terraform make init: %v", err)
+	}
+
+	// make plan
+
+	// make apply
 
 	return nil
 }
@@ -83,6 +99,7 @@ func createStorageAccount(subscriptionId string) error {
 	if err != nil {
 		return fmt.Errorf("creating new default Azure credential: %v", err)
 	}
+
 
 	clientFactory, err := armstorage.NewClientFactory(subscriptionId, cred, nil)
 	if err != nil {

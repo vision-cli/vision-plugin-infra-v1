@@ -18,7 +18,15 @@ vision --help
 
 Before running the plugin, you must set the following environment variables in your active terminal:
 ```
-  AZURE_SUBSCRIPTION_ID
+  --- Azure ---
+  export AZURE_SUBSCRIPTION_ID=...
+
+  --- Terraform ---
+  export ENVIRONMENT=...
+  export POSTGRES_PASSWORD=...
+  export AUTH_PASSWORD=...
+  export TF_AUTO_APPROVE=...
+
 ```
 
 You are now ready to run the plugin. You can run the plugin using:

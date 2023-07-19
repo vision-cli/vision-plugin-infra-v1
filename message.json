@@ -1,6 +1,6 @@
 {
 	"Command":"run",
-	"Args":["create","azure"],
+	"Args":["create", "aws"],
 	"Flags":[],
 	"Placeholders": {
 		"ProjectRoot":"",
@@ -25,10 +25,6 @@
 		"ServiceFqn":"",
 		"ServiceDirectory":"",
 		"InfraDirectory":"",
-		"ProtoPackage":"",
-    "Infra": {
-      "ResourceGroupName": "vision-infra-plugin-rg",
-      "StorageAccountName": "infrapluginstgacc"
-    }
+		"ProtoPackage":""
 		}
 }
