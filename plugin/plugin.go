@@ -38,25 +38,40 @@ You should already have this seed project from project create as you need the co
 
 2. Now you can run:
   
-     vision gcp create
+      vision gcp create
+
+3. Update the dev.tfvars and prod.tfvars files in infra/gcp/platform/tf/config. 
+   You need to update details such as billing account, folder, etc.
+
+4. The first infrastructure creation must be done manually in order to create the workload identity used by the github workflow.
+ 
+   4.1 Make sure you are logged in and authe'ed against the seed project
+
+          gcloud auth application-default login --project seed
+
+   4.2 Initialise terraform with
+
+	      ENVIRONMENT=dev make init
+  
+   4.3. Apply the terraform with
+
+          ENVIRONMENT=dev DB_PASSWORD=<dev db password> OAUTH2_CLIENT_SECRET=<oauth client secret from 1.2> make init
+  
+   4.4. Configure DNS with the load balancer IPs returned by terraform, viz
 
 3. Create a PR to merge the code and github workflow into your repo. Once merged, 
    the workflow will run and create the dev and prod projects.
    Make a note of the terraform output variables which you need for step 4 below.
 
 4. Create the following secrets in the project's github repo:
-   - DEV_DB_PASSWORD - create a strong password for the dev database
-   - DEV_GCP_WORKLOAD_IDP - this is the idp for the dev workload (from step 3)
-   - DEV_GCP_SERV_ACCOUNT - this is the service account for the dev workload (from step 3)
-   - PROD_DB_PASSWORD - create a strong password for the prod database
-   - PROD_GCP_WORKLOAD_IDP - this is the idp for the prod workload (from step 3)
-   - PROD_GCP_SERV_ACCOUNT - this is the service account for the prod workload (from step 3)
+   - DEV_DB_PASSWORD - dev db password from 4.3 above
+   - DEV_GCP_WORKLOAD_IDP - this is the idp for the dev workload (from step 4.3)
+   - DEV_GCP_SERV_ACCOUNT - this is the service account for the dev workload (from step 4.3)
+   - PROD_DB_PASSWORD - prod db password from 4.3 above
+   - PROD_GCP_WORKLOAD_IDP - this is the idp for the prod workload (from step 4.3)
+   - PROD_GCP_SERV_ACCOUNT - this is the service account for the prod workload (from step 4.3)
    - OAUTH2_CLIENT_SECRET - this is the oauth2 client secret from the seed project (step 1.2 above)
-
-4. You must update the dev.tfvars and prod.tfvars files in infra/gcp/platform/tf/config. 
-   You need to update details such as billing account, folder, etc.
-
-	`,
+`,
 	Subcommands:    []string{"create"},
 	Flags:          []api_v1.PluginFlag{},
 	RequiresConfig: true,
