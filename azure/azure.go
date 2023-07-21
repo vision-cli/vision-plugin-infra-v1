@@ -8,8 +8,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 	"github.com/vision-cli/common/execute"
+
 	// "github.com/vision-cli/common/tmpl"
 	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
 )
@@ -74,16 +76,19 @@ func EngageAzure(executor execute.Executor) error {
 	subscriptionId := os.Getenv("AZURE_SUBSCRIPTION_ID")
 
 	fmt.Println("creating storage account (azure)")
-	err := createStorageAccount(subscriptionId)
-	if err != nil {
+	if err := createStorageAccount(subscriptionId); err != nil {
 		return fmt.Errorf("failed to create storage account: %v", err)
+	}
+
+	//create tfstate container
+	if err := createTfStateContainer(subscriptionId); err != nil {
+		return fmt.Errorf("creating terraform state container: %v", err)
 	}
 
 	fmt.Println("executing make init (terraform)")
 	c := exec.Command("make", "init")
 
-	err = executor.Errors(c, "./azure/_templates/az/tf/", "inititalise Terraform")
-	if err != nil {
+	if err := executor.Errors(c, "./azure/_templates/az/tf/", "inititalise Terraform"); err != nil {
 		return fmt.Errorf("executing Terraform make init: %v", err)
 	}
 
@@ -121,3 +126,34 @@ func createStorageAccount(subscriptionId string) error {
 
 	return nil
 }
+
+func createTfStateContainer(subscriptionId string) error {
+	storageAccountNameUrl := "https://infrapluginstgacc.blob.core.windows.net"
+	containerName := "tfstate"
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return fmt.Errorf("creating new default Azure credential: %v", err)
+	}
+
+	opts := azblob.ClientOptions {}
+
+	client, err := azblob.NewClient(storageAccountNameUrl, cred, &opts)
+	if err != nil {
+		return fmt.Errorf("create container client: %v", err)
+	}
+
+	_, err = client.CreateContainer(ctx, containerName, nil)
+	if err != nil {
+		return fmt.Errorf("create tfstate container: %v", err)
+	}
+
+	return nil
+}
+
+// func handleError(str string, err error) error {
+// 	if err != nil {
+// 		return fmt.Errorf(str + ": %v", err)
+// 	}
+// 	return nil
+// }
