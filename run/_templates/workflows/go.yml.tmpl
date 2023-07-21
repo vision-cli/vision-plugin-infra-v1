@@ -1,0 +1,179 @@
+name: {{.ProjectFqn} Infra
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/infra.yaml
+      - '{{.InfraDirectory}}/gcp/platform/tf/**'
+    tags:
+      - {{.InfraDirectory}}/gcp/platform/tf/v[0-9]+\.[0-9]+\.[0-9]+
+
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .github/workflows/infra.yaml
+      - '{{.InfraDirectory}}/gcp/platform/tf/**'
+
+  workflow_dispatch:
+    branches:
+      - master
+    paths:
+      - .github/workflows/infra.yaml
+      - '{{.InfraDirectory}}/gcp/platform/tf/**'
+
+defaults:
+  run:
+    working-directory: {{.InfraDirectory}}/gcp/platform/tf
+
+jobs:
+  plan-dev:
+    name: Plan Dev
+    runs-on: ubuntu-latest
+    #GITHUB token permissions need to be defined to allow access to the id-token
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.6
+
+      - name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          workload_identity_provider: '${{ secrets.DEV_GCP_WORKLOAD_IDP }}'
+          service_account: '${{ secrets.DEV_GCP_SERV_ACCOUNT }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Terraform format checking
+        run: terraform fmt -recursive -check
+
+      - name: Initialise Plan for DEV only
+        run: make init && make plan
+        env:
+          ENVIRONMENT: dev
+          TF_AUTO_APPROVE: --auto-approve
+          DB_PASSWORD: ${{ secrets.DEV_DB_PASSWORD }}
+          OAUTH2_CLIENT_SECRET: ${{ secrets.OAUTH2_CLIENT_SECRET }}
+
+  plan-prod:
+    name: Plan Prod
+    runs-on: ubuntu-latest
+    #GITHUB token permissions need to be defined to allow access to the id-token
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    if: startsWith(github.ref, 'refs/tags/packages/infra/tf/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.6
+
+      - name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          workload_identity_provider: '${{ secrets.PROD_GCP_WORKLOAD_IDP }}'
+          service_account: '${{ secrets.PROD_GCP_SERV_ACCOUNT }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Terraform format checking
+        run: terraform fmt -recursive -check
+
+      - name: Initialise Plan for PROD only
+        run: make init && make plan
+        env:
+          ENVIRONMENT: prod
+          TF_AUTO_APPROVE: --auto-approve
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          OAUTH2_CLIENT_SECRET: ${{ secrets.OAUTH2_CLIENT_SECRET }}
+
+  deploy-dev:
+    name: Deploy to dev
+    needs: plan-dev
+    runs-on: ubuntu-latest
+    #GITHUB token permissions need to be defined to allow access to the id-token
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.6
+
+      - name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          workload_identity_provider: '${{ secrets.DEV_GCP_WORKLOAD_IDP }}'
+          service_account: '${{ secrets.DEV_GCP_SERV_ACCOUNT }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Terraform format checking
+        run: terraform fmt -recursive -check
+
+      - name: Initialise and auto apply Infra changes
+        run: make init && make plan && make apply
+        env:
+          ENVIRONMENT: dev
+          TF_AUTO_APPROVE: --auto-approve
+          DB_PASSWORD: ${{ secrets.DEV_DB_PASSWORD }}
+          OAUTH2_CLIENT_SECRET: ${{ secrets.OAUTH2_CLIENT_SECRET }}
+
+  deploy-prod:
+    name: Deploy to Prod
+    needs: plan-prod
+    runs-on: ubuntu-latest
+    #GITHUB token permissions need to be defined to allow access to the id-token
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    environment: 'prod'
+    if: startsWith(github.ref, 'refs/tags/packages/infra/tf/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.6
+
+      - name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          workload_identity_provider: '${{ secrets.PROD_GCP_WORKLOAD_IDP }}'
+          service_account: '${{ secrets.PROD_GCP_SERV_ACCOUNT }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: Terraform format checking
+        run: terraform fmt -recursive -check
+
+      - name: Initialise and auto apply Infra changes
+        run: make init && make plan && make apply
+        env:
+          ENVIRONMENT: prod
+          TF_AUTO_APPROVE: --auto-approve
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          OAUTH2_CLIENT_SECRET: ${{ secrets.OAUTH2_CLIENT_SECRET }}

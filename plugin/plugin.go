@@ -12,14 +12,54 @@ import (
 )
 
 var Usage = api_v1.PluginUsageResponse{
-	Version:        "0.1.0",
-	Use:            "infra",
-	Short:          "manage infra",
-	Long:           "manage infra using a standard template",
-	Example:        "vision infra create myInfra",
+	Version: "0.1.0",
+	Use:     "gcp",
+	Short:   "manage gcp infratrusture",
+	Long:    "manage gcp infrastructure using a standard template",
+	Example: `Before runing vision gcp create, you will need a gcp seed project. The purpose of this project is to:
+
+- store the terraform state in a storage bucket so it can be shared
+- hold the service account that is used to create the dev and prod projects
+- hold the container registry
+- hold the oauth2 client, because Google cant automate this, it must be done manually before an IAP can be created
+
+You should already have this seed project from project create as you need the container registry parameter to create the project. 
+
+1. In the seed project:
+
+   1.1. Create a storage bucket called 'tfstate-<unique id>', 
+        where <unique id> is a unique-str for your project - you can see this in vision.json.
+        Set the region as required.
+        Warning! It is highly recommended that you enable Object Versioning on the GCS bucket 
+		         to allow for state recovery in the case of accidental deletions and human error.
+
+   1.2. In the Google console go to the oauth consent screen and set it to "external". 
+        You will have to create a brand as well. Make a note of the client id and secret (you will need this for step 4).
+
+2. Now you can run:
+  
+     vision gcp create
+
+3. Create a PR to merge the code and github workflow into your repo. Once merged, 
+   the workflow will run and create the dev and prod projects.
+   Make a note of the terraform output variables which you need for step 4 below.
+
+4. Create the following secrets in the project's github repo:
+   - DEV_DB_PASSWORD - create a strong password for the dev database
+   - DEV_GCP_WORKLOAD_IDP - this is the idp for the dev workload (from step 3)
+   - DEV_GCP_SERV_ACCOUNT - this is the service account for the dev workload (from step 3)
+   - PROD_DB_PASSWORD - create a strong password for the prod database
+   - PROD_GCP_WORKLOAD_IDP - this is the idp for the prod workload (from step 3)
+   - PROD_GCP_SERV_ACCOUNT - this is the service account for the prod workload (from step 3)
+   - OAUTH2_CLIENT_SECRET - this is the oauth2 client secret from the seed project (step 1.2 above)
+
+4. You must update the dev.tfvars and prod.tfvars files in infra/gcp/platform/tf/config. 
+   You need to update details such as billing account, folder, etc.
+
+	`,
 	Subcommands:    []string{"create"},
 	Flags:          []api_v1.PluginFlag{},
-	RequiresConfig: false,
+	RequiresConfig: true,
 }
 
 var DefaultConfig = api_v1.PluginConfigResponse{
@@ -49,10 +89,6 @@ func Handle(input string, e execute.Executor, t tmpl.TmplWriter) string {
 		}
 		switch req.Args[placeholders.ArgsCommandIndex] {
 		case "create":
-			if len(req.Args) <= 1 ||
-				req.Args[placeholders.ArgsNameIndex] == "" {
-				return errorResponse(errors.New("missing infra name"))
-			}
 			p, err := placeholders.SetupPlaceholders(req)
 			if err != nil {
 				return errorResponse(err)
