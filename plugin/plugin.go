@@ -49,13 +49,13 @@ You should already have this seed project from project create as you need the co
 
           gcloud auth application-default login --project seed
 
-   4.2 Initialise terraform with
+   4.2 From the /infra/gcp/platform/tf folder initialise terraform with
 
-	      ENVIRONMENT=dev make init
+          ENVIRONMENT=dev make init
   
    4.3. Apply the terraform with
 
-          ENVIRONMENT=dev DB_PASSWORD=<dev db password> OAUTH2_CLIENT_SECRET=<oauth client secret from 1.2> make init
+          ENVIRONMENT=dev DB_PASSWORD=<dev db password> OAUTH2_CLIENT_SECRET=<oauth client secret from 1.2> make apply
   
    4.4. Configure DNS with the load balancer IPs returned by terraform, viz
 

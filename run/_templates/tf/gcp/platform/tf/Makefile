@@ -1,4 +1,4 @@
-TF_CONFIG_DIR=config
+TF_ENVIRONMENTS_DIR=config
 TF_ARGS = -var-file=$(TF_ENVIRONMENTS_DIR)/$(ENVIRONMENT).tfvars \
           -var="db_user_password=$(DB_PASSWORD)" \
           -var="oauth2_client_secret=$(OAUTH2_CLIENT_SECRET)"

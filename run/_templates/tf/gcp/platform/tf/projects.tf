@@ -21,6 +21,6 @@ module "project" {
 resource "google_project_service_identity" "cloudrun_sa" {
   provider = google-beta
 
-  project = module.dev_project.project_id
+  project = module.project.project_id
   service = "iap.googleapis.com"
 }

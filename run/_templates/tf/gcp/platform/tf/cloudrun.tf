@@ -5,7 +5,7 @@ module "cloud_run" {
   service_acct_email        = module.project.service_account_email
   oauth2_client_id          = var.oauth2_client_id
   oauth2_client_secret      = var.oauth2_client_secret
-  dev_members               = var.members
-  vpc_access_connector_name = google_vpc_access_connector.connector.name
+  members                   = var.members
+  vpc_access_connector_name = google_vpc_access_connector.vpc_connector.name
   domain                    = var.domain
 }

@@ -20,7 +20,7 @@ resource "google_compute_url_map" "urlmap" {
     }
   }
 
-  depends_on = [ 
-    google_compute_region_network_endpoint_group.example_neg, 
+  depends_on = [
+    google_compute_region_network_endpoint_group.example_neg,
   ]
 }
