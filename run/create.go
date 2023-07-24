@@ -125,7 +125,6 @@ func providerChecks(cmd *cobra.Command, args []string, executor execute.Executor
 	switch provider {
 	case ProviderAzure:
 	case ProviderAws:
-		// return aws.EngageAws()
 	case ProviderGcp:
 	}
 
