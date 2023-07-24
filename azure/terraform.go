@@ -31,3 +31,16 @@ func CallTerrformPlan(executor execute.Executor) error {
 	println("make plan (terraform) succeeded")
 	return nil
 }
+
+func CallTerraformApply(executor execute.Executor) error {
+
+	fmt.Println("executing make apply (terraform)")
+	c := exec.Command("make", "apply")
+
+	if err := executor.Errors(c, "./azure/_templates/az/tf/", "apply Terraform"); err != nil {
+		return err
+	}
+	
+	println("make plan (terraform) succeeded")
+	return nil
+}

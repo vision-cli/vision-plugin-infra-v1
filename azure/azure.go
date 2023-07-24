@@ -94,7 +94,9 @@ func EngageAzure(executor execute.Executor) error {
 		return fmt.Errorf("executing Terraform make plan: %v", err)
 	}
 
-	// make apply
+	if err := CallTerraformApply(executor); err != nil {
+		return fmt.Errorf("executing Terraform make apply: %v", err)
+	}
 
 	return nil
 }
