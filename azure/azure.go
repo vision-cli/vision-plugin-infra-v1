@@ -170,8 +170,8 @@ func checkContainerExists(subscriptionId string, cred *azidentity.DefaultAzureCr
 
 	_, err = bcc.Get(ctx, resourceGroupName, accountName, containerName, nil)
 
+	// A regex that looks for a specific error code
 	notFoundErr := regexp.MustCompile(`ERROR CODE: ContainerNotFound`)
-
 	if err != nil && notFoundErr.MatchString(err.Error()) {
 		fmt.Println("container does not exist -- creating container")
 		return false, nil
