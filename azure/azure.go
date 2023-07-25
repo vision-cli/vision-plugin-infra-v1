@@ -4,10 +4,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/vision-cli/common/execute"
+
+	// "github.com/vision-cli/common/tmpl"
 	"github.com/vision-cli/vision-plugin-infra-v1/placeholders"
 )
 
@@ -24,7 +29,7 @@ import (
 
 var (
 	resourceGroupName string = placeholders.GetDefaultAzureResourceGroupName()
-	accountName       string = "infrapluginstgacc"
+	accountName       string = placeholders.GetAzureStorageAccount()
 	ctx                      = context.Background()
 )
 
@@ -67,13 +72,31 @@ var accCreateParams armstorage.AccountCreateParameters = armstorage.AccountCreat
 	},
 }
 
-func EngageAzure() error {
+func EngageAzure(executor execute.Executor) error {
 	subscriptionId := os.Getenv("AZURE_SUBSCRIPTION_ID")
 
-	err := createStorageAccount(subscriptionId)
-	if err != nil {
+	fmt.Println("creating storage account (azure)")
+	if err := createStorageAccount(subscriptionId); err != nil {
 		return fmt.Errorf("failed to create storage account: %v", err)
 	}
+
+	//create tfstate container
+	fmt.Println("creating tfstate container (azure)")
+	if err := createTfStateContainer(subscriptionId); err != nil {
+		return fmt.Errorf("creating terraform state container: %v", err)
+	}
+
+	if err := CallTerraformInit(executor); err != nil {
+		return fmt.Errorf("executing Terraform make init: %v", err)
+	}
+
+	if err := CallTerrformPlan(executor); err != nil {
+		return fmt.Errorf("executing Terraform make plan: %v", err)
+	}
+
+	// if err := CallTerraformApply(executor); err != nil {
+	// 	return fmt.Errorf("executing Terraform make apply: %v", err)
+	// }
 
 	return nil
 }
@@ -103,4 +126,59 @@ func createStorageAccount(subscriptionId string) error {
 	}
 
 	return nil
+}
+
+func createTfStateContainer(subscriptionId string) error {
+	storageAccountNameUrl := fmt.Sprintf("https://%s.blob.core.windows.net", accountName)
+	containerName := "tfstate"
+
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return fmt.Errorf("creating new default Azure credential: %v", err)
+	}
+
+	opts := azblob.ClientOptions{}
+
+	client, err := azblob.NewClient(storageAccountNameUrl, cred, &opts)
+	if err != nil {
+		return fmt.Errorf("create container client: %v", err)
+	}
+
+	// check tfstate container exists
+	fmt.Println("checking tfstate container exists")
+	if containerExists, err := checkContainerExists(subscriptionId, cred, containerName); err != nil {
+		return fmt.Errorf("check tfstate container exists: %v", err)
+	} else if containerExists {
+		return nil
+	}
+
+	_, err = client.CreateContainer(ctx, containerName, nil)
+	if err != nil {
+		return fmt.Errorf("create tfstate container: %v", err)
+	}
+
+	return nil
+}
+
+func checkContainerExists(subscriptionId string, cred *azidentity.DefaultAzureCredential, containerName string) (bool, error) {
+
+	// check if container already exists
+	bcc, err := armstorage.NewBlobContainersClient(subscriptionId, cred, nil)
+	if err != nil {
+		return false, fmt.Errorf("create blob service client: %v", err)
+	}
+
+	_, err = bcc.Get(ctx, resourceGroupName, accountName, containerName, nil)
+
+	// A regex that looks for a specific error code
+	notFoundErr := regexp.MustCompile(`ERROR CODE: ContainerNotFound`)
+	if err != nil && notFoundErr.MatchString(err.Error()) {
+		fmt.Println("container does not exist -- creating container")
+		return false, nil
+	} else if err != nil {
+		return false, fmt.Errorf("get container name: %v", err)
+	}
+
+	fmt.Println("container already exists -- continuing build")
+	return true, nil
 }

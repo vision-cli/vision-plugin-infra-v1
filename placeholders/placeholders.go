@@ -79,7 +79,7 @@ func GetProjectName() string {
 }
 
 func GetAzureStorageAccount() string {
-	return viperAzureStorageAccountKey
+	return "infrapluginstgacc"
 }
 
 func GetAzureKeyvault() string {

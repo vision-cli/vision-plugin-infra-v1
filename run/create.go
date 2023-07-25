@@ -60,7 +60,7 @@ func Create(p *placeholders.Placeholders, executor execute.Executor, t tmpl.Tmpl
 		return fmt.Errorf("generating structure from the template: %w", err)
 	}
 
-	if err := azure.EngageAzure(); err != nil {
+	if err := azure.EngageAzure(executor); err != nil {
 		return fmt.Errorf("engaging Azure: %v", err)
 	}
 
@@ -112,6 +112,8 @@ func providerChecks(cmd *cobra.Command, args []string, executor execute.Executor
 
 	provider := args[0]
 
+	fmt.Printf("PROVIDER CHECKS: %v", provider)
+
 	if !executor.CommandExists("terraform") {
 		return fmt.Errorf("terraform is not installed")
 	}
@@ -122,7 +124,6 @@ func providerChecks(cmd *cobra.Command, args []string, executor execute.Executor
 
 	switch provider {
 	case ProviderAzure:
-		return azure.EngageAzure()
 	case ProviderAws:
 	case ProviderGcp:
 	}
