@@ -94,9 +94,9 @@ func EngageAzure(executor execute.Executor) error {
 		return fmt.Errorf("executing Terraform make plan: %v", err)
 	}
 
-	if err := CallTerraformApply(executor); err != nil {
-		return fmt.Errorf("executing Terraform make apply: %v", err)
-	}
+	// if err := CallTerraformApply(executor); err != nil {
+	// 	return fmt.Errorf("executing Terraform make apply: %v", err)
+	// }
 
 	return nil
 }
@@ -178,8 +178,6 @@ func checkContainerExists(subscriptionId string, cred *azidentity.DefaultAzureCr
 	} else if err != nil {
 		return false, fmt.Errorf("get container name: %v", err)
 	}
-
-	fmt.Println("DEBUGGING: if statement runs below")
 
 	fmt.Println("container already exists -- continuing build")
 	return true, nil
