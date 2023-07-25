@@ -25,7 +25,7 @@ type MockClientFactory struct {
 	mock.Mock
 }
 
-// simulates creating a new instance of an armstorage.AccountsClient,
+// simulates creating a new instance of an armstorage.AccountsClient
 func (m *MockClientFactory) NewAccountsClient() armstorage.AccountsClient {
 	args := m.Called()
 	return args.Get(0).(armstorage.AccountsClient)
