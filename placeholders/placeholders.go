@@ -30,6 +30,7 @@ var nonAlphaRegex = regexp.MustCompile(`[^a-zA-Z]+`)
 
 type Placeholders struct {
 	Name string
+	ResourceGroup string
 }
 
 func SetupPlaceholders(req api_v1.PluginRequest) (*Placeholders, error) {
@@ -39,6 +40,7 @@ func SetupPlaceholders(req api_v1.PluginRequest) (*Placeholders, error) {
 	name := clearString(req.Args[ArgsNameIndex])
 	return &Placeholders{
 		Name: name,
+		ResourceGroup: "resource-group",
 	}, nil
 }
 

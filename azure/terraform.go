@@ -2,7 +2,7 @@ package azure
 
 import (
 	"fmt"
-	"os"
+	// "os"
 	"os/exec"
 
 	"github.com/vision-cli/common/execute"
@@ -17,14 +17,13 @@ func CallTerraformInit(executor execute.Executor) error {
 	}
 
 	fmt.Println("make init (terraform) succeeded")
-
 	return nil
 }
 
 func CallTerrformPlan(executor execute.Executor) error {
 	// Fetch env variables from shell
-	db_pass := os.Getenv("POSTGRES_PASSWORD")
-	auth_pass := os.Getenv("AUTH_PASSWORD")
+	// db_pass := os.Getenv("POSTGRES_PASSWORD")
+	// auth_pass := os.Getenv("AUTH_PASSWORD")
 
 
 	fmt.Println("executing make plan (terraform)")
